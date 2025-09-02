@@ -425,6 +425,10 @@ export default function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
   // Auto-refresh effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
