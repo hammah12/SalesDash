@@ -113,38 +113,41 @@ export default function Dashboard() {
   // Helper function to calculate cohort-based conversion rates
   const calculateCohortConversions = () => {
     const cohortData: any = {};
-    
+
+    const normalizeDate = (dateStr: string) =>
+      new Date(dateStr).toISOString().split('T')[0];
+
     // Process leads grabbed by date and rep
     data.leadsGrabbedDaily.forEach(item => {
-      const date = item.Date;
+      const date = normalizeDate(item.Date);
       const leadsGrabbed = item['Leads Grabbed'] || 0;
-      
+
       if (!cohortData[date]) {
         cohortData[date] = { leadsGrabbed: 0, conversions: 0, reps: {} };
       }
       cohortData[date].leadsGrabbed += leadsGrabbed;
     });
-    
+
     // Process conversions by date and rep from new daily data
     data.conversionRepDaily.forEach(item => {
-      const leadDate = item.Date; // Lead created date
-      const conversionDate = item.ConversionDate;
+      const leadDate = normalizeDate(item.Date); // Lead created date
+      const conversionDate = normalizeDate(item.ConversionDate);
       const rep = item.Rep;
-      
+
       // Only count same-day conversions for cohort analysis
       if (leadDate === conversionDate) {
         if (!cohortData[leadDate]) {
           cohortData[leadDate] = { leadsGrabbed: 0, conversions: 0, reps: {} };
         }
         cohortData[leadDate].conversions += 1;
-        
+
         if (!cohortData[leadDate].reps[rep]) {
           cohortData[leadDate].reps[rep] = { conversions: 0, leadsGrabbed: 0 };
         }
         cohortData[leadDate].reps[rep].conversions += 1;
       }
     });
-    
+
     return cohortData;
   };
 
@@ -257,7 +260,7 @@ export default function Dashboard() {
     
     // Best performer insight
     if (repStats.length > 0) {
-      const topPerformer = repStats.reduce((best: any, current: any) => 
+      const topPerformer: any = repStats.reduce((best: any, current: any) =>
         (current.conversionPerformance > best.conversionPerformance) ? current : best, repStats[0]);
       
       if (topPerformer && topPerformer.name) {
