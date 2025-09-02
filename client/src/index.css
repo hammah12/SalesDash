@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0 0% 98%);
+  --foreground: hsl(220 9% 13%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(220 9% 13%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 9% 13%);
+  --primary: hsl(214 100% 59%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(142 76% 36%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(10 100% 58%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(10 100% 58%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --success: hsl(142 100% 20%);
+  --success-foreground: hsl(0 0% 100%);
+  --border: hsl(214.3 31.8% 91.4%);
+  --input: hsl(214.3 31.8% 91.4%);
+  --ring: hsl(214 100% 59%);
+  --chart-1: hsl(214 100% 59%);
+  --chart-2: hsl(142 76% 36%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(220 9% 13%);
+  --sidebar-primary: hsl(214 100% 59%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(210 40% 96%);
+  --sidebar-accent-foreground: hsl(214 100% 59%);
+  --sidebar-border: hsl(214.3 31.8% 91.4%);
+  --sidebar-ring: hsl(214 100% 59%);
+  --font-sans: 'Google Sans', 'Roboto', sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 8px;
+  --shadow-2xs: 0px 1px 2px 0px hsl(220 9% 13% / 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(220 9% 13% / 0.05);
+  --shadow-sm: 0px 1px 3px 0px hsl(220 9% 13% / 0.1), 0px 1px 2px -1px hsl(220 9% 13% / 0.1);
+  --shadow: 0px 1px 3px 0px hsl(220 9% 13% / 0.1), 0px 1px 2px -1px hsl(220 9% 13% / 0.1);
+  --shadow-md: 0px 4px 6px -1px hsl(220 9% 13% / 0.1), 0px 2px 4px -2px hsl(220 9% 13% / 0.1);
+  --shadow-lg: 0px 10px 15px -3px hsl(220 9% 13% / 0.1), 0px 4px 6px -4px hsl(220 9% 13% / 0.1);
+  --shadow-xl: 0px 20px 25px -5px hsl(220 9% 13% / 0.1), 0px 8px 10px -6px hsl(220 9% 13% / 0.1);
+  --shadow-2xl: 0px 25px 50px -12px hsl(220 9% 13% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(0 0% 0%);
+  --foreground: hsl(200 6.6667% 91.1765%);
+  --card: hsl(228 9.8039% 10%);
+  --card-foreground: hsl(0 0% 85.0980%);
+  --popover: hsl(0 0% 0%);
+  --popover-foreground: hsl(200 6.6667% 91.1765%);
+  --primary: hsl(214 100% 59%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(142 76% 36%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(0 0% 9.4118%);
+  --muted-foreground: hsl(210 3.3898% 46.2745%);
+  --accent: hsl(10 100% 58%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(10 100% 58%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --success: hsl(142 100% 20%);
+  --success-foreground: hsl(0 0% 100%);
+  --border: hsl(210 5.2632% 14.9020%);
+  --input: hsl(207.6923 27.6596% 18.4314%);
+  --ring: hsl(214 100% 59%);
+  --chart-1: hsl(214 100% 59%);
+  --chart-2: hsl(142 76% 36%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(228 9.8039% 10%);
+  --sidebar-foreground: hsl(0 0% 85.0980%);
+  --sidebar-primary: hsl(214 100% 59%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(205.7143 70% 7.8431%);
+  --sidebar-accent-foreground: hsl(214 100% 59%);
+  --sidebar-border: hsl(205.7143 15.7895% 26.0784%);
+  --sidebar-ring: hsl(214 100% 59%);
+  --font-sans: 'Google Sans', 'Roboto', sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 8px;
+  --shadow-2xs: 0px 1px 2px 0px hsl(220 9% 13% / 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(220 9% 13% / 0.05);
+  --shadow-sm: 0px 1px 3px 0px hsl(220 9% 13% / 0.1), 0px 1px 2px -1px hsl(220 9% 13% / 0.1);
+  --shadow: 0px 1px 3px 0px hsl(220 9% 13% / 0.1), 0px 1px 2px -1px hsl(220 9% 13% / 0.1);
+  --shadow-md: 0px 4px 6px -1px hsl(220 9% 13% / 0.1), 0px 2px 4px -2px hsl(220 9% 13% / 0.1);
+  --shadow-lg: 0px 10px 15px -3px hsl(220 9% 13% / 0.1), 0px 4px 6px -4px hsl(220 9% 13% / 0.1);
+  --shadow-xl: 0px 20px 25px -5px hsl(220 9% 13% / 0.1), 0px 8px 10px -6px hsl(220 9% 13% / 0.1);
+  --shadow-2xl: 0px 25px 50px -12px hsl(220 9% 13% / 0.25);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+.chart-container {
+  min-height: 320px;
+}
+
+.metric-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pulse-dot {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.trend-up {
+  color: var(--success);
+}
+
+.trend-down {
+  color: var(--destructive);
+}
+
+.data-table th {
+  position: sticky;
+  top: 0;
+  background: var(--background);
+  z-index: 10;
+}

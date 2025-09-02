@@ -1,0 +1,340 @@
+import React, { useState } from 'react';
+import Papa from 'papaparse';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+import {
+  DollarSign, Clock, Users, ArrowDownCircle, AlertTriangle
+} from 'lucide-react';
+
+export default function App() {
+  // State to hold parsed data
+  const [data, setData] = useState({
+    udDollarWeekly: [],
+    talkTimeDaily: [],
+    conversionDaily: [],
+    leadsGrabbedDaily: [],
+    leadsBehindSummary: [],
+    conversionRepMonthly: [],
+  });
+
+  // State for loading and URLs
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  // Paste your base URL here
+  const [baseSheetUrl, setBaseSheetUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRItUGpVy9ifoEA9hKEUyJvfdcCQ5UuFmDchpDiZ-gV9zR6gIr7uYZ1lvTWfPvpaxI3Z7TzzywTqypS/pub?');
+  const [gids, setGids] = useState({
+    udDollarWeekly: '1498781890', 
+    talkTimeDaily: '1050305791', 
+    conversionDaily: '653460525', 
+    leadsGrabbedDaily: '1664565885', 
+    leadsBehindSummary: '477962305', 
+    conversionRepMonthly: '2121407859',
+  });
+
+  const handleBaseUrlChange = (e) => {
+    setBaseSheetUrl(e.target.value);
+  };
+
+  const handleGidChange = (e, key) => {
+    setGids(prevGids => ({ ...prevGids, [key]: e.target.value }));
+  };
+
+  // Helper function to parse and format data from a URL
+  const parseDataFromUrl = (url, formatter) => {
+    return new Promise((resolve, reject) => {
+      Papa.parse(url, {
+        download: true,
+        header: true,
+        dynamicTyping: true,
+        complete: (results) => {
+          if (results.errors.length > 0) {
+            console.error("CSV Parsing Errors:", results.errors);
+            reject(results.errors);
+          } else {
+            resolve(formatter(results.data));
+          }
+        },
+        error: (error) => {
+          reject(error);
+        },
+      });
+    });
+  };
+
+  // Helper function to format MTD Dollars
+  const formatMtdDollars = (value) => {
+    if (typeof value === 'string') {
+      return parseFloat(value.replace(/[$,]/g, ''));
+    }
+    return value;
+  };
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const newData = {
+        udDollarWeekly: [],
+        talkTimeDaily: [],
+        conversionDaily: [],
+        leadsGrabbedDaily: [],
+        leadsBehindSummary: [],
+        conversionRepMonthly: [],
+      };
+
+      // Construct and fetch for each dataset
+      const udDollarWeeklyUrl = `${baseSheetUrl}gid=${gids.udDollarWeekly}&single=true&output=csv`;
+      newData.udDollarWeekly = await parseDataFromUrl(udDollarWeeklyUrl, (docs) => docs);
+      
+      const talkTimeDailyUrl = `${baseSheetUrl}gid=${gids.talkTimeDaily}&single=true&output=csv`;
+      newData.talkTimeDaily = await parseDataFromUrl(talkTimeDailyUrl, (docs) => docs.map(d => ({
+        ...d,
+        "Total Minutes": d['sum Duration'] ? (d['sum Duration'] / 60).toFixed(2) : 0,
+        Date: d['Created Date'],
+      })).sort((a, b) => new Date(a.Date) - new Date(b.Date)));
+
+      const conversionDailyUrl = `${baseSheetUrl}gid=${gids.conversionDaily}&single=true&output=csv`;
+      newData.conversionDaily = await parseDataFromUrl(conversionDailyUrl, (docs) => docs.map(d => ({
+        ...d,
+        "Total Dollars": d['sum Loan Value'],
+        Date: d['Created Date'],
+      })).sort((a, b) => new Date(a.Date) - new Date(b.Date)));
+
+      const leadsGrabbedDailyUrl = `${baseSheetUrl}gid=${gids.leadsGrabbedDaily}&single=true&output=csv`;
+      newData.leadsGrabbedDaily = await parseDataFromUrl(leadsGrabbedDailyUrl, (docs) => docs.map(d => ({
+        ...d,
+        Date: d.Date,
+      })).sort((a, b) => new Date(a.Date) - new Date(b.Date)));
+
+      const leadsBehindSummaryUrl = `${baseSheetUrl}gid=${gids.leadsBehindSummary}&single=true&output=csv`;
+      newData.leadsBehindSummary = await parseDataFromUrl(leadsBehindSummaryUrl, (docs) => docs.sort((a, b) => b.Total - a.Total));
+
+      const conversionRepMonthlyUrl = `${baseSheetUrl}gid=${gids.conversionRepMonthly}&single=true&output=csv`;
+      newData.conversionRepMonthly = await parseDataFromUrl(conversionRepMonthlyUrl, (docs) => docs.map(d => ({
+        ...d,
+        "MTD Dollars": formatMtdDollars(d["MTD Dollars"]),
+      })).sort((a, b) => b["MTD Dollars"] - a["MTD Dollars"]));
+      
+      setData(newData);
+    } catch (err) {
+      console.error("Failed to fetch data:", err);
+      setError("Failed to load data. Please ensure the base URL and GIDs are correct and the sheets are published to the web as CSV.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Dashboard layout and components
+  return (
+    <div className="bg-gray-100 font-sans p-4 sm:p-6 lg:p-8 min-h-screen text-gray-800">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">Sales Team Dashboard</h1>
+          <p className="mt-2 text-lg sm:text-xl text-gray-600">
+            A comprehensive overview of key sales metrics.
+          </p>
+        </div>
+
+        {/* URL Input Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Enter Google Sheet Published URLs</h2>
+          <div className="flex flex-col mb-4">
+            <label className="text-sm font-medium text-gray-700 mb-1">Base Workbook URL (Publish to Web as CSV)</label>
+            <input
+              type="text"
+              value={baseSheetUrl}
+              onChange={handleBaseUrlChange}
+              className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Paste the base URL of your published workbook"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.keys(gids).map((key) => (
+              <div key={key} className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700 mb-1">{key} GID</label>
+                <input
+                  type="text"
+                  value={gids[key]}
+                  onChange={(e) => handleGidChange(e, key)}
+                  className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder={`Paste GID for ${key}`}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 text-center">
+            <button
+              onClick={fetchAllData}
+              className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition duration-300"
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Load Data'}
+            </button>
+          </div>
+          {error && <p className="mt-4 text-center text-sm text-red-500">{error}</p>}
+        </div>
+
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* Total Units Uploaded This Week */}
+          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between">
+            <div className="flex-grow">
+              <p className="text-sm font-medium text-gray-500">Total Units Uploaded (Last Week)</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {data.udDollarWeekly.length > 0 ? data.udDollarWeekly[data.udDollarWeekly.length - 1]['Unit Count'] : 0}
+              </p>
+            </div>
+            <div className="p-3 bg-indigo-100 rounded-full text-indigo-500">
+              <DollarSign size={24} />
+            </div>
+          </div>
+
+          {/* Total Calls Last Day */}
+          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between">
+            <div className="flex-grow">
+              <p className="text-sm font-medium text-gray-500">Total Calls (Today)</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {data.talkTimeDaily.length > 0 ? data.talkTimeDaily[data.talkTimeDaily.length - 1]['count Duration'] : 0}
+              </p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-full text-green-500">
+              <Clock size={24} />
+            </div>
+          </div>
+
+          {/* Total Conversions Last Day */}
+          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between">
+            <div className="flex-grow">
+              <p className="text-sm font-medium text-gray-500">Total Units Converted (Today)</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {data.conversionDaily.length > 0 ? data.conversionDaily[data.conversionDaily.length - 1]['count Loan Value'] : 0}
+              </p>
+            </div>
+            <div className="p-3 bg-rose-100 rounded-full text-rose-500">
+              <ArrowDownCircle size={24} />
+            </div>
+          </div>
+
+          {/* Total Leads Grabbed Last Day */}
+          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between">
+            <div className="flex-grow">
+              <p className="text-sm font-medium text-gray-500">Leads Grabbed (Today)</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {data.leadsGrabbedDaily.length > 0 ? data.leadsGrabbedDaily[data.leadsGrabbedDaily.length - 1]['Leads Grabbed'] : 0}
+              </p>
+            </div>
+            <div className="p-3 bg-yellow-100 rounded-full text-yellow-500">
+              <Users size={24} />
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          {/* Talk Time Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Daily Talk Time (Minutes)</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={data.talkTimeDaily}
+                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="Date" style={{ fontSize: '0.75rem' }} tick={{ angle: -45, textAnchor: 'end' }} height={60} />
+                <YAxis style={{ fontSize: '0.75rem' }} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
+                <Line type="monotone" dataKey="Total Minutes" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Conversion Dollars Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Daily Conversions (Dollars)</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={data.conversionDaily}
+                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="Date" style={{ fontSize: '0.75rem' }} tick={{ angle: -45, textAnchor: 'end' }} height={60} />
+                <YAxis style={{ fontSize: '0.75rem' }} tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
+                <Tooltip formatter={(value) => `$${new Intl.NumberFormat('en-US').format(value)}`} />
+                <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
+                <Line type="monotone" dataKey="Total Dollars" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Leads & Opps Behind Table and MTD Conversions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          {/* Leads/Opps Behind Table */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Leads & Opps Behind</h2>
+              <div className="p-2 bg-red-100 rounded-full text-red-500">
+                <AlertTriangle size={20} />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto text-sm text-left text-gray-500">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">Rep Name</th>
+                    <th scope="col" className="px-6 py-3 text-right">Leads Behind</th>
+                    <th scope="col" className="px-6 py-3 text-right">Opps Behind</th>
+                    <th scope="col" className="px-6 py-3 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.leadsBehindSummary.map((item, index) => (
+                    <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-900">{item['Lead Owner']}</td>
+                      <td className="px-6 py-4 text-right">{item['Leads Behind ']}</td>
+                      <td className="px-6 py-4 text-right">{item['Opp Behind']}</td>
+                      <td className="px-6 py-4 text-right font-bold">{item.Total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* MTD Conversions Table */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">MTD Conversions (Dollars)</h2>
+              <div className="p-2 bg-indigo-100 rounded-full text-indigo-500">
+                <DollarSign size={20} />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto text-sm text-left text-gray-500">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">Rep Name</th>
+                    <th scope="col" className="px-6 py-3 text-right">Dollars</th>
+                    <th scope="col" className="px-6 py-3 text-right">Units</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.conversionRepMonthly.map((item, index) => (
+                    <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-900">{item['Rep Name']}</td>
+                      <td className="px-6 py-4 text-right">${new Intl.NumberFormat('en-US').format(item['MTD Dollars'])}</td>
+                      <td className="px-6 py-4 text-right">{item['MTD Units']}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
