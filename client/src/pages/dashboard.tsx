@@ -253,20 +253,25 @@ export default function Dashboard() {
 
   const generatePerformanceInsights = () => {
     const insights: any[] = [];
-    const { repStats } = calculateRepPerformance();
+    const { repStats } = calculateRepPerformance() as { repStats: any[] };
     
     // Best performer insight
     if (repStats.length > 0) {
-      const topPerformer = repStats.reduce((best: any, current: any) => 
-        (current.conversionPerformance > best.conversionPerformance) ? current : best, repStats[0]);
-      
-      if (topPerformer && topPerformer.name) {
+      const topPerformer: any = repStats.reduce(
+        (best: any, current: any) =>
+          current.conversionPerformance > best.conversionPerformance
+            ? current
+            : best,
+        repStats[0],
+      );
+
+      if (topPerformer?.name) {
         insights.push({
           type: 'Top Performer',
           message: `${topPerformer.name} is leading with ${topPerformer.cohortConversionRate?.toFixed(1) || 0}% conversion rate`,
           action: 'Consider having them mentor underperformers',
           icon: TrendingUp,
-          color: 'success'
+          color: 'success',
         });
       }
     }
